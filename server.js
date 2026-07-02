@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-
 app.use(cors());
 
 app.get("/api/car", async (req, res) => {
@@ -11,9 +10,7 @@ app.get("/api/car", async (req, res) => {
         .replace(/[^A-Z0-9]/g, "");
 
     if (!kenteken) {
-        return res.status(400).json({
-            error: "Geen kenteken opgegeven"
-        });
+        return res.status(400).json({ error: "Geen kenteken" });
     }
 
     try {
@@ -23,32 +20,27 @@ app.get("/api/car", async (req, res) => {
 
         const data = await response.json();
 
-        if (!data.length) {
-            return res.status(404).json({
-                error: "Voertuig niet gevonden"
-            });
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: "Niet gevonden" });
         }
 
-        const auto = data[0];
+        const v = data[0];
 
         res.json({
             kenteken,
-            merk: auto.merk,
-            model: auto.handelsbenaming,
-            bouwjaar: auto.datum_eerste_toelating?.slice(0, 4),
-            kleur: auto.eerste_kleur,
-            apk: auto.vervaldatum_apk
+            merk: v.merk,
+            model: v.handelsbenaming,
+            bouwjaar: v.datum_eerste_toelating?.slice(0, 4),
+            apk: v.vervaldatum_apk
         });
 
     } catch (err) {
-        console.error(err);
-
-        res.status(500).json({
-            error: "RDW niet bereikbaar"
-        });
+        res.status(500).json({ error: "Server error", details: err.message });
     }
 });
 
-app.listen(3000, () => {
-    console.log("🚗 API draait op http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log("API draait op port", PORT);
 });

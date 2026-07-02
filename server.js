@@ -37,11 +37,11 @@ const carImages = [
     // SEAT
     {
     key: "SEAT|LEON",
-    image: "https://unsplash.com/photos/a-car-parked-in-front-of-a-building-e9hPLbMyKP8"
+    image: "https://images.unsplash.com/photo-1659786674426-e663513da556?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 },
 {
     key: "SEAT|LEON FR",
-    image: "https://unsplash.com/photos/a-car-parked-in-front-of-a-building-e9hPLbMyKP8"
+    image: "https://images.unsplash.com/photo-1659786674426-e663513da556?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 }
 ];
 

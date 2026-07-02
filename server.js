@@ -5,9 +5,10 @@ const app = express();
 app.use(cors());
 
 /**
- * 🖼️ IMAGE DATABASE (per merk + serie)
+ * 🖼️ IMAGE DATABASE
  */
 const carImages = [
+    // BMW
     {
         key: "BMW|1 SERIE",
         image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2"
@@ -30,12 +31,22 @@ const carImages = [
     },
     {
         key: "BMW|7 SERIE",
-        image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d"
+        image: "https://unsplash.com/photos/gray-audi-coupe-on-gray-asphalt-road-during-daytime-Y8-H19uSx-Y"
+    },
+
+    // SEAT
+    {
+        key: "SEAT|LEON",
+        image: "https://unsplash.com/photos/blue-bmw-m-3-on-road-during-daytime-m8EeCTLx63w"
+    },
+    {
+        key: "SEAT|LEON FR",
+        image: "https://unsplash.com/photos/a-car-parked-in-front-of-a-building-e9hPLbMyKP8"
     }
 ];
 
 /**
- * 🔧 BMW MODEL NORMALIZER
+ * 🚗 BMW NORMALIZER
  */
 function normalizeBMW(model) {
     if (!model) return "UNKNOWN";
@@ -53,20 +64,48 @@ function normalizeBMW(model) {
 }
 
 /**
+ * 🚗 SEAT NORMALIZER
+ */
+function normalizeSeat(model) {
+    if (!model) return "UNKNOWN";
+
+    const m = model.toUpperCase();
+
+    if (m.includes("LEON FR") || m.includes("FR")) return "LEON FR";
+    if (m.includes("LEON")) return "LEON";
+
+    return "UNKNOWN";
+}
+
+/**
+ * 🧠 MERK ROUTER (BELANGRIJK)
+ */
+function normalizeModel(merk, model) {
+    const m = model || "";
+
+    switch (merk) {
+        case "BMW":
+            return normalizeBMW(m);
+
+        case "SEAT":
+            return normalizeSeat(m);
+
+        default:
+            return m.toUpperCase();
+    }
+}
+
+/**
  * 🖼️ IMAGE MATCHER
  */
 function findImage(merk, model) {
     const key = `${merk}|${model}`.toUpperCase();
 
-    return (
-        carImages.find(c => c.key === key) ||
-        carImages.find(c => c.key.includes(merk)) ||
-        null
-    );
+    return carImages.find(c => c.key === key) || null;
 }
 
 /**
- * 🚗 MAIN API ENDPOINT
+ * 🚗 API ENDPOINT
  */
 app.get("/api/car", async (req, res) => {
     const kenteken = (req.query.kenteken || "")
@@ -88,7 +127,7 @@ app.get("/api/car", async (req, res) => {
 
         const merk = v.merk || "ONBEKEND";
 
-        const model = normalizeBMW(v.handelsbenaming);
+        const model = normalizeModel(merk, v.handelsbenaming);
 
         const bouwjaar = v.datum_eerste_toelating
             ? v.datum_eerste_toelating.slice(0, 4)
@@ -106,6 +145,7 @@ app.get("/api/car", async (req, res) => {
         });
 
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Server error" });
     }
 });

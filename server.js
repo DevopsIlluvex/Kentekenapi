@@ -4,58 +4,70 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 
-const bmwGenerations = [
-    { name: "E36", from: 1990, to: 1999 },
-    { name: "E46", from: 1998, to: 2006 },
-    { name: "E90", from: 2005, to: 2013 },
-    { name: "F30", from: 2011, to: 2019 },
-    { name: "G20", from: 2018, to: 9999 }
-];
-
+/**
+ * 🖼️ IMAGE DATABASE (per merk + serie)
+ */
 const carImages = [
     {
-        key: "BMW|3 SERIE|E46",
+        key: "BMW|1 SERIE",
+        image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2"
+    },
+    {
+        key: "BMW|2 SERIE",
+        image: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a"
+    },
+    {
+        key: "BMW|3 SERIE",
         image: "https://res.cloudinary.com/haardsqv/image/upload/f_auto,q_auto/butze-bmw-1254474_patnim"
     },
     {
-        key: "BMW|3 SERIE|",
-        image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7"
+        key: "BMW|4 SERIE",
+        image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738"
+    },
+    {
+        key: "BMW|5 SERIE",
+        image: "https://images.unsplash.com/photo-1555215695-3004980ad54e"
+    },
+    {
+        key: "BMW|7 SERIE",
+        image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d"
     }
 ];
 
-function normalizeModel(merk, model) {
-    model = model.toUpperCase();
+/**
+ * 🔧 BMW MODEL NORMALIZER
+ */
+function normalizeBMW(model) {
+    if (!model) return "UNKNOWN";
 
-    if (merk === "BMW" && model.includes("3ER")) return "3 SERIE";
-    if (merk === "BMW" && model.includes("5ER")) return "5 SERIE";
-    if (merk === "BMW" && model.includes("1ER")) return "1 SERIE";
-
-    return model;
-}
-
-function getBMWGeneration(year) {
-    const y = parseInt(year);
-    const gen = bmwGenerations.find(g => y >= g.from && y <= g.to);
-    return gen ? gen.name : null;
-}
-
-function extractTrim(model) {
     const m = model.toUpperCase();
-    const match = m.match(/\b(316I|318I|320I|325I|330I|316D|318D|320D|330D)\b/);
-    return match ? match[0] : "";
+
+    if (m.includes("1ER") || m.includes("1 SERIE")) return "1 SERIE";
+    if (m.includes("2ER") || m.includes("2 SERIE")) return "2 SERIE";
+    if (m.includes("3ER") || m.includes("3 SERIE")) return "3 SERIE";
+    if (m.includes("4ER") || m.includes("4 SERIE")) return "4 SERIE";
+    if (m.includes("5ER") || m.includes("5 SERIE")) return "5 SERIE";
+    if (m.includes("7ER") || m.includes("7 SERIE")) return "7 SERIE";
+
+    return "UNKNOWN";
 }
 
-function findImage(merk, model, generatie) {
-    const full = `${merk}|${model}|${generatie}`.toUpperCase();
-    const fallback = `${merk}|${model}|`.toUpperCase();
+/**
+ * 🖼️ IMAGE MATCHER
+ */
+function findImage(merk, model) {
+    const key = `${merk}|${model}`.toUpperCase();
 
     return (
-        carImages.find(c => c.key === full) ||
-        carImages.find(c => c.key === fallback) ||
+        carImages.find(c => c.key === key) ||
+        carImages.find(c => c.key.includes(merk)) ||
         null
     );
 }
 
+/**
+ * 🚗 MAIN API ENDPOINT
+ */
 app.get("/api/car", async (req, res) => {
     const kenteken = (req.query.kenteken || "")
         .toUpperCase()
@@ -74,25 +86,23 @@ app.get("/api/car", async (req, res) => {
 
         const v = data[0];
 
-        const merk = v.merk;
-        const model = normalizeModel(merk, v.handelsbenaming);
+        const merk = v.merk || "ONBEKEND";
 
-        const year = v.datum_eerste_toelating?.slice(0, 4);
-        const uitvoering = extractTrim(v.handelsbenaming);
-        const generatie = merk === "BMW" ? getBMWGeneration(year) : null;
+        const model = normalizeBMW(v.handelsbenaming);
 
-        const image = findImage(merk, model, generatie);
+        const bouwjaar = v.datum_eerste_toelating
+            ? v.datum_eerste_toelating.slice(0, 4)
+            : null;
+
+        const image = findImage(merk, model);
 
         res.json({
             kenteken,
             merk,
             model,
-            generatie,
-            uitvoering,
-            bouwjaar: year,
-            apk: v.vervaldatum_apk,
-            image: image?.image || null,
-            image_key: `${merk}|${model}|${generatie}|${uitvoering}`
+            bouwjaar,
+            apk: v.vervaldatum_apk || null,
+            image: image?.image || null
         });
 
     } catch (err) {
@@ -100,6 +110,9 @@ app.get("/api/car", async (req, res) => {
     }
 });
 
+/**
+ * 🚀 START SERVER
+ */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

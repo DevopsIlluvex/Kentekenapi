@@ -56,9 +56,6 @@ function findImage(merk, model, generatie) {
     );
 }
 
-/**
- * 🚗 API ENDPOINT
- */
 app.get("/api/car", async (req, res) => {
     const kenteken = (req.query.kenteken || "")
         .toUpperCase()

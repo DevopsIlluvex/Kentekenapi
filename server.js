@@ -15,12 +15,8 @@ app.use(cors());
 
 const carImages = [
     {
-        key: "BMW|3 SERIE|E46|330I",
+        key: "BMW|3 SERIE|E46",
         image: "https://res.cloudinary.com/haardsqv/image/upload/f_auto,q_auto/butze-bmw-1254474_patnim"
-    },
-    {
-        key: "BMW|3 SERIE|316I",
-        image: "https://images.unsplash.com/photo-1555215695-3004980ad54e"
     },
     {
         key: "BMW|3 SERIE|",
@@ -48,8 +44,11 @@ function getBMWGeneration(year) {
 }
 
 function extractTrim(model) {
-    const match = model.match(/\b(\d{3}[A-Z]?|M3|M4|M5)\b/i);
-    return match ? match[0].toUpperCase() : "";
+    const m = model.toUpperCase();
+
+    const match = m.match(/\b(316I|318I|320I|325I|330I|316D|318D|320D|330D)\b/);
+
+    return match ? match[0] : "";
 }
 
 function cleanModel(model) {
@@ -83,19 +82,30 @@ app.get("/api/car", async (req, res) => {
     const uitvoering = extractTrim(v.handelsbenaming);
     const generatie = merk === "BMW" ? getBMWGeneration(year) : null;
 
-    const imageKey = `${merk}|${model}|${generatie}|${uitvoering}`;
+    const image = findImage(merk, model, generatie);
 
     res.json({
-        kenteken,
-        merk,
-        model,
-        generatie,
-        uitvoering,
-        bouwjaar: year,
-        apk: v.vervaldatum_apk,
-        image_key: imageKey
-    });
+    kenteken,
+    merk,
+    model,
+    generatie,
+    uitvoering,
+    bouwjaar: year,
+    apk: v.vervaldatum_apk,
+    image: image?.image || null,
+    image_key: `${merk}|${model}|${generatie}|${uitvoering}`
 });
+
+function findImage(merk, model, generatie) {
+    const full = `${merk}|${model}|${generatie}`.toUpperCase();
+    const fallback = `${merk}|${model}|`.toUpperCase();
+
+    return (
+        carImages.find(c => c.key === full) ||
+        carImages.find(c => c.key === fallback) ||
+        null
+    );
+}
 
 
 const PORT = process.env.PORT || 3000;

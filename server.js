@@ -36,13 +36,13 @@ const carImages = [
 
     // SEAT
     {
-        key: "SEAT|LEON",
-        image: "https://unsplash.com/photos/blue-bmw-m-3-on-road-during-daytime-m8EeCTLx63w"
-    },
-    {
-        key: "SEAT|LEON FR",
-        image: "https://unsplash.com/photos/a-car-parked-in-front-of-a-building-e9hPLbMyKP8"
-    }
+    key: "SEAT|LEON",
+    image: "https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?auto=format&fit=crop&w=1600&q=80"
+},
+{
+    key: "SEAT|LEON FR",
+    image: "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?auto=format&fit=crop&w=1600&q=80"
+}
 ];
 
 /**
